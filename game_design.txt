@@ -16,6 +16,11 @@ Will use sessions to store information about the player and the current status o
 
 
 
+Strategy:
+1. Get routes in working order with forms and variables passing and storing correctly
+2. Add game functionality
+3. Polish the game and UI
+
 
 
 
