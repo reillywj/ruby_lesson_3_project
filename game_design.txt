@@ -1,0 +1,21 @@
+Thoughts on how to design the blackjack game on what's been learned thus far:
+
+Will need rubygems and sinatra using require method
+
+Will use sessions to store information about the player and the current status of the game: {player_name, deck, player_cards, dealer_cards, current_bank, current_bet}
+
+-Index will redirect to some sort of set_name page
+-After name is POSTed and stored in sessions, will redirect to betting page
+-Betting page will let the player bet (more than 0 or less than current_bank); show minimum-bet in the textbox already as an option (say $50)
+-Submitting will POST the amount to the sessions and redirect to the players_turn, if valid entry or state an error message sending player back with a minimum bet (50 or current_bank) in the textbox.
+-Player_turn will deal the cards and show the dealer's top card and each of the players card: if not blackjack or busted, player can choose to hit or stay, if blackjack, show button to redirect to bet page or end_game page
+-POST response (hit or stay)
+-If hit, deal player card, redirect and show cards again
+-If stay, go to dealer_turn. If dealer requires a card, the player presses a button until the dealer >= 17.  Then shows winner/tie
+-Next button either redirects to end_game or bet page or start_over => redirects user to bet page with new bank
+
+
+
+
+
+
