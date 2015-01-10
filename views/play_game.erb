@@ -1,0 +1,80 @@
+<h2>Let's play Blackjack!</h2>
+
+<!-- message if won, busted(and/or bankrupt), lost (and/or bankrupt), or tie -->
+<p><%= session[:username] %></p>
+  <ul>
+    <li>Bank: $<%= session[:bank] %></li>
+    <% unless session[:winner] %><li>Current Bet: $<%= session[:current_bet]%></li><% end %>
+    <li>Score: <%= session[:player_score] %></li>
+    <li>Status: <%= session[:player_status] %></li>
+    <li>Turn: <%= session[:turn] %></li>
+    <%if session[:winner]%> <li>Winner: <%= session[:winner]%></li><% end %>
+  </ul>
+
+<% if session[:turn] == "dealer_turn" || (session[:turn] == "hand_over" && session[:player_status] == "stay") %>
+  <p>Dealer</p>
+  <ul>
+    <li>Score: <%= session[:dealer_score] %></li>
+  </ul>
+  <p><strong>
+    State results.</strong></p>
+<% end %>
+<% if (0 == session[:bank] && 0 == session[:current_bet]) || "hand_over" == session[:turn]%>
+  <% if 0 == session[:bank] %>
+    <p><%= session[:username] %>, you are bankrupt!!!!!</p>
+    <form method="post" action="/play_new_game">
+      <input type="submit" value="Borrow $1000 and Play Again!"/>
+    </form>
+  <% else %>
+    <form method="post" action="/play_again">
+      <input type="submit" value="Play Again"/>
+    </form>
+  <% end %>
+
+  <form method="post" action="/end_game">
+    <input type="submit" value="I'm Done!"/>
+  </form>
+<% end %>
+
+<hr/>
+
+<!-- Show dealer's cards -->
+<h4>Dealer's Cards</h4>
+<% if session[:turn] == "dealer_turn" %>
+  DEALER'S TURN
+  Show both cards, determine to hit or stay.
+<% else %>
+  <%= session[:username] if session[:turn] == "player_turn" %>
+  <%= "Hand Over" if session[:turn] == "hand_over" %>
+  Show just 1 card and another turned over.
+<% end %>
+
+<hr/>
+
+<!-- Show player's cards -->
+<h4><%= session[:username] %>'s Cards</h4>
+<strong>Show player's cards here.</strong>
+
+<hr/>
+
+<!-- Provide action depending on turn and ability -->
+<% if session[:turn] == "player_turn" %>
+  Hit or stay.
+  <form method="post" action="/deal_to_player">
+    <input type="submit" value="Hit Me!"/>
+  </form>
+  <form method="post" action="/player_stay">
+    <input type="submit" value="Stay"/>
+  </form>
+<% elsif session[:turn] == "dealer_turn" && session[:dealer_score] < 17 %>
+  Form to show Dealer's next card if they have less than 17.
+  <form method="post" action="/deal_to_dealer">
+    <input type="submit" value="Give"/>
+  </form>
+<% else %>
+  <hr/>
+  <p>Show nothing.</p>
+<% end %>
+
+
+

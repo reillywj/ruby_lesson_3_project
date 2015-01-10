@@ -1,9 +1,12 @@
 <h2>Welcome to Blackjack</h3>
 
 <form action="/set_name" method="post">
-  <p>Please, enter your name: <input type='text' name='username' required='required'/></p>
-  
+  <p>Please enter your name: <input type='text' name='username' required='required'/></p>
   <input type='submit' value="Submit Name"/>
-
 </form>
 
+<% unless session[:username] == nil %>
+  <form action='/named' method='post'>
+    <input type='submit' value='I am <%=session[:username]%>' />
+  </form>
+<% end %>

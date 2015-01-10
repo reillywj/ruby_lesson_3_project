@@ -8,12 +8,23 @@ use Rack::Session::Cookie, :key => 'rack.session',
 
 
 get '/' do
-  erb :set_name
+    erb :set_name
 end
 
 post '/set_name' do
   session[:username] = params[:username]
-  session[:bank] = 1000
+  redirect '/named'
+end
+
+post '/named' do
+  session[:bank]        = 1000
+  session[:current_bet] = 5
+  redirect '/bet'
+end
+
+get '/named' do
+  session[:bank]        = 1000
+  session[:current_bet] = 5
   redirect '/bet'
 end
 
@@ -22,54 +33,97 @@ get '/bet' do
 end
 
 post '/set_current_bet' do
-  redirect '/bet' if params[:bet].to_i > session[:bank] || params[:bet].to_i.to_s != params[:bet]
-  session[:current_bet] = params[:bet].to_i
-  session[:turn] = "User"
-  redirect '/game'
+  bet                     = params[:bet].to_i
+  session[:current_bet]   = bet.to_i
+  redirect '/bet'         if bet > session[:bank] || bet <= 0
+  session[:bank]         -= session[:current_bet]
+  session[:turn]          = "player_turn" #initialize player's turn
+  session[:player_status] = "hit" #initialize hit status; gives player option to hit or stay
+  session[:winner]        = false
+  #Will deal cards here
+  session[:dealer_score]  = rand(17) + 4 #Calculate score
+  session[:player_score]  = rand(17) + 4 #Calculate score
+  redirect '/play_game'
 end
 
-get '/game' do
-  "User Turn" #if session[:turn] == "User"
-  # "Something else" if false
-  # (session[:turn] == "User").to_s
-#   erb :user_turn if session[:turn] == "User"
-#   erb :dealer_turn if session[:turn] == "Dealer"
-#   redirect '/game_over' if false
+get '/play_game' do
+  erb :play_game
 end
 
-post '/set_dealer_turn' do
-  session[:turn] = "Dealer"
-  redirect '/game'
+post '/deal_to_player' do
+  #deal card to player
+  session[:player_score] += rand(10) + 1 #calculate player score
+  if    session[:player_score] == 21
+    redirect '/end_hand'
+  elsif session[:player_score] <= 21
+    redirect '/play_game'
+  else
+    redirect '/end_hand'
+  end
+
 end
 
-post '/finalize_hand' do
-  #calculate score
-  #calculate if player lost and out of money
-  redirect '/hand_over'
+post '/deal_to_dealer' do
+  session[:dealer_score] += rand(10) + 1
+  if session[:dealer_score] < 17
+    redirect '/play_game'
+  else
+    redirect '/end_hand'
+  end
 end
 
-get '/game_over' do
-  erb :game_over
+post '/player_stay' do
+  session[:player_status] = "stay"
+  if session[:dealer_score] < 17
+    session[:turn] = "dealer_turn"
+    redirect 'play_game'
+  else
+    redirect '/end_hand'
+  end
 end
 
-get '/bankrupt' do
-  erb :bankrupt
+get '/end_hand' do
+  score1          = session[:player_score]
+  score2          = session[:dealer_score]
+  session[:turn]  = "hand_over"
+  if    score1 == 21
+    session[:bank]   += session[:current_bet] * 2
+    session[:winner]  = "#{session[:username]}, you hit BLACKJACK!!! You win automatically!"
+  elsif score1 >  21 || (score2<=21 && score1 < score2)
+    session[:winner]  = "Dealer wins #{session[:dealer_score]} to #{session[:player_score]}"
+  elsif score2 >  21 || (score1 > score2)
+    session[:bank]   += session[:current_bet] * 2
+    session[:winner]  = "#{session[:username]}, you win!!! #{session[:player_score]} to #{session[:dealer_score]}."
+  elsif score1 == score2
+    session[:winner]  = "It's a tie: #{session[:dealer_score]} to #{session[:player_score]}"
+  else
+    session[:winner]  = "Check winning conditions in end_hand get method."
+  end
+
+  session[:current_bet] = 0
+  redirect '/play_game'
 end
 
-post '/new_game' do
-  session[:bank] = 1000
+post '/play_new_game' do
+  redirect '/named'
+end
+
+post '/play_again' do
+  session[:current_bet] = 5
   redirect '/bet'
 end
 
-post '/say_goodbye' do
-  redirect :say_goodbye
+post '/end_game' do
+  redirect '/gameover'
 end
 
-get '/goodbye' do
-
+get '/gameover' do 
+  erb :gameover
 end
 
-
+post '/go_to_google' do
+  redirect 'https://www.google.com'
+end
 
 
 
