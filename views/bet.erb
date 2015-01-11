@@ -1,10 +1,10 @@
 <h2>Place your bet</h3>
 <% if session[:current_bet] > session[:bank] %>
-  <p><strong>$<%= session[:current_bet] %> is more than you have in your bank!</strong></p>
+  <div class='alert alert-error'><p><strong>$<%= session[:current_bet] %> is more than you have in your bank!</strong></p></div>
 <% end %>
 
 <% if session[:current_bet] <= 0 %>
-  <p><strong>$<%= session[:current_bet] %> is not enough for your first bet!</strong></p>
+  <div class='alert alert-error'><p><strong>$<%= session[:current_bet] %> is not enough for your first bet!</strong></p></div>
 <% end %>
 
 

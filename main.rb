@@ -30,8 +30,14 @@ helpers do
       end#for
     end#if
       total
-  end#def
-end#do
+  end#def calculate_total
+
+  def card_image(card)
+    suit = card[0]
+    value = card[1]
+    "<img src='/images/cards/#{suit}_#{value}.jpg' alt='#{value} of #{suit}'/>"
+  end
+end#do helper
 
 get '/' do
     redirect '/set_name'

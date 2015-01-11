@@ -1,25 +1,15 @@
 <h2>Welcome to Blackjack</h3>
 
 <% unless session[:username] == nil %>
-  <table class='table table-condensed'>
-    <tbody>
-      <tr>
-        <td>
-          <h4>Who are you?</h4>
-        </td>
-        <td>
-          <form action='/named' method='post'>
-            <input type='submit' value='I AM <%=session[:username]%>' class='btn btn-success'/>
-          </form>
-        </td>
-        <td>
-          <form action='/reset_name' method="post">
-            <input type='submit' value='I am NOT <%= session[:username] %>, LOGOUT!' class='btn btn-danger'/>
-          </form>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <h4>Who are you?</h4>
+
+  <form action='/named' method='post'>
+    <input type='submit' value='I AM <%=session[:username]%>' class='btn btn-success'/>
+  </form>
+  <form action='/reset_name' method="post">
+    <input type='submit' value='I am NOT <%= session[:username] %>, LOGOUT!' class='btn btn-danger'/>
+  </form>
+
 <% end %>
 
 <% if session[:username] == nil %>
