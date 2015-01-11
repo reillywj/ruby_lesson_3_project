@@ -1,12 +1,21 @@
 <h2>Welcome to Blackjack</h3>
 
-<form action="/set_name" method="post">
-  <p>Please enter your name: <input type='text' name='username' required='required'/></p>
-  <input type='submit' value="Submit Name"/>
-</form>
-
 <% unless session[:username] == nil %>
+  <p>Who are you?</p>
   <form action='/named' method='post'>
-    <input type='submit' value='I am <%=session[:username]%>' />
+    <input type='submit' value='I AM <%=session[:username]%>' />
+  </form>
+
+  <form action='/reset_name' method="post">
+    <input type='submit' value='I am NOT <%= session[:username] %>, LOGOUT!'/>
+  </form
+<% end %>
+
+<% if session[:username] == nil %>
+  <form action="/set_name" method="post">
+    <p>Please enter your name: <input type='text' name='username' required='required'/></p>
+    <input type='submit' value="Submit Name"/>
   </form>
 <% end %>
+
+

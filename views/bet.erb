@@ -1,11 +1,12 @@
 <h2>Place your bet</h3>
-<% if session[:current_bet] > session[:bank] || session[:current_bet] <= 0%>
-  <p>$<%= session[:current_bet] %> is more than you have in your bank!</p>
+<% if session[:current_bet] > session[:bank] %>
+  <p><strong>$<%= session[:current_bet] %> is more than you have in your bank!</strong></p>
 <% end %>
 
-<% unless session[:current_bet].to_i.to_s %>
-  <p><%= session[:current_bet] %> is an invalid entry!</p>
+<% if session[:current_bet] <= 0 %>
+  <p><strong>$<%= session[:current_bet] %> is not enough for your first bet!</strong></p>
 <% end %>
+
 
 <form action='/set_current_bet' method='post'>
   <p><%= session[:username] %>, you have $<%= session[:bank] %>.</p>

@@ -8,7 +8,16 @@ use Rack::Session::Cookie, :key => 'rack.session',
 
 
 get '/' do
-    erb :set_name
+    redirect '/set_name'
+end
+
+get '/set_name' do
+  erb :set_name
+end
+
+post '/reset_name' do
+  session[:username] = nil
+  redirect '/set_name'
 end
 
 post '/set_name' do
@@ -89,13 +98,16 @@ get '/end_hand' do
   if    score1 == 21
     session[:bank]   += session[:current_bet] * 2
     session[:winner]  = "#{session[:username]}, you hit BLACKJACK!!! You win automatically!"
-  elsif score1 >  21 || (score2<=21 && score1 < score2)
+  elsif score1 >  21
+    session[:winner]  = "Dealer wins; you busted with #{session[:player_score]}"
+  elsif (score2<=21 && score1 < score2)
     session[:winner]  = "Dealer wins #{session[:dealer_score]} to #{session[:player_score]}"
   elsif score2 >  21 || (score1 > score2)
     session[:bank]   += session[:current_bet] * 2
     session[:winner]  = "#{session[:username]}, you win!!! #{session[:player_score]} to #{session[:dealer_score]}."
   elsif score1 == score2
     session[:winner]  = "It's a tie: #{session[:dealer_score]} to #{session[:player_score]}"
+    session[:bank] += session[:current_bet] #give player money back
   else
     session[:winner]  = "Check winning conditions in end_hand get method."
   end

@@ -44,16 +44,15 @@
   DEALER'S TURN
   Show both cards, determine to hit or stay.
 <% else %>
-  <%= session[:username] if session[:turn] == "player_turn" %>
-  <%= "Hand Over" if session[:turn] == "hand_over" %>
-  Show just 1 card and another turned over.
+  <h5><%= "Hand Over" if session[:turn] == "hand_over" %></h5>
+  <p>Show just 1 card and another turned over.</p>
 <% end %>
 
 <hr/>
 
 <!-- Show player's cards -->
 <h4><%= session[:username] %>'s Cards</h4>
-<strong>Show player's cards here.</strong>
+<p>Show player's cards here.</p>
 
 <hr/>
 
