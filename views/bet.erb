@@ -8,8 +8,9 @@
 <% end %>
 
 
-<form action='/set_current_bet' method='post'>
-  <p><%= session[:username] %>, you have $<%= session[:bank] %>.</p>
-  <p>How much would you like to bet? <input type='text' name='bet'/></p>
-  <input type='submit' value='Submit Bet'/>
+<form action='/set_current_bet' method='post' class='form-inline'>
+  <h4><%= session[:username] %>, you have $<%= session[:bank] %>.</h4>
+  <label>How much would you like to bet?</label>
+  <input type='text' name='bet' placeholder='5' required='required'/>
+  <input type='submit' value='Submit Bet' class='btn btn-primary'/>
 </form>

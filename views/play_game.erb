@@ -1,79 +1,96 @@
-<h2>Let's play Blackjack!</h2>
+<% unless "hand_over" == session[:turn] %>
+  <h2>Let's Play Blackjack!</h2>
+<% end %>
 
 <!-- message if won, busted(and/or bankrupt), lost (and/or bankrupt), or tie -->
-<p><%= session[:username] %></p>
-  <ul>
-    <li>Bank: $<%= session[:bank] %></li>
-    <% unless session[:winner] %><li>Current Bet: $<%= session[:current_bet]%></li><% end %>
-    <li>Score: <%= session[:player_score] %></li>
-    <li>Status: <%= session[:player_status] %></li>
-    <li>Turn: <%= session[:turn] %></li>
-    <%if session[:winner]%> <li>Winner: <%= session[:winner]%></li><% end %>
-  </ul>
-
-<% if session[:turn] == "dealer_turn" || (session[:turn] == "hand_over" && session[:player_status] == "stay") %>
-  <p>Dealer</p>
-  <ul>
-    <li>Score: <%= session[:dealer_score] %></li>
-  </ul>
-  <p><strong>
-    State results.</strong></p>
+<div>
+<% if "hand_over" == session[:turn] %>
+  <h2><%=session[:winner]%></h2>
 <% end %>
 <% if (0 == session[:bank] && 0 == session[:current_bet]) || "hand_over" == session[:turn]%>
-  <% if 0 == session[:bank] %>
-    <p><%= session[:username] %>, you are bankrupt!!!!!</p>
-    <form method="post" action="/play_new_game">
-      <input type="submit" value="Borrow $1000 and Play Again!"/>
-    </form>
-  <% else %>
-    <form method="post" action="/play_again">
-      <input type="submit" value="Play Again"/>
-    </form>
-  <% end %>
-
-  <form method="post" action="/end_game">
-    <input type="submit" value="I'm Done!"/>
-  </form>
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <% if 0 == session[:bank] %>
+            <h4><%= session[:username] %>, you are bankrupt!!!!!</h4>
+          </td>
+          <td>
+            <form method="post" action="/play_new_game">
+              <input type="submit" value="Borrow $1000 and Play Again!" class='btn btn-warning'/>
+            </form>
+          <% else %>
+            <form method="post" action="/play_again">
+              <input type="submit" value="Play Again" class='btn btn-success'/>
+            </form>
+          <% end %>
+        </td>
+        <td>
+          <form method="post" action="/end_game">
+            <input type="submit" value="I'm Done!" class='btn btn-danger'/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 <% end %>
+
+<!-- Provide action depending on turn and ability -->
+<% if session[:turn] == "player_turn" %>
+  <h3>Hit or stay.</h3>
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <form method="post" action="/deal_to_player">
+            <input type="submit" value="I only have <%= session[:player_score]%>. Hit Me!" class='btn btn-success'/>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/player_stay">
+            <input type="submit" value="Stay at <%= session[:player_score]%>." class='btn btn-danger'/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+<% elsif session[:turn] == "dealer_turn" && session[:dealer_score] < 17 %>
+  <form method="post" action="/deal_to_dealer">
+    <input type="submit" value="Dealer only has <%=session[:dealer_score]%>. Deal Card to Dealer" class='btn btn-primary'/>
+  </form>
+<% else %>
+  <!-- do nothing -->
+<% end %>
+</div>
 
 <hr/>
 
 <!-- Show dealer's cards -->
-<h4>Dealer's Cards</h4>
-<% if session[:turn] == "dealer_turn" %>
-  DEALER'S TURN
-  Show both cards, determine to hit or stay.
+
+<% if session[:player_status] == "stay" %>
+  <h3>Dealer's Cards Total <%=session[:dealer_score]%></h3>
+  <div>
+    <% session[:dealer_cards].each do |card| %>
+      <img src="/images/cards/<%= "#{card[0]}_#{card[1]}" %>.jpg" alt="<%= "#{card[1]} of #{card[0]}"%>"/>
+    <% end %>
+  </div>
 <% else %>
-  <h5><%= "Hand Over" if session[:turn] == "hand_over" %></h5>
-  <p>Show just 1 card and another turned over.</p>
+  <h3>Dealer's Cards</h3>
+  <div>
+    <img src="/images/cards/<%= "#{session[:dealer_cards][1][0]}_#{session[:dealer_cards][1][1]}" %>.jpg" alt="<%= "#{session[:dealer_cards][1][1]} of #{session[:dealer_cards][1][0]}"%>"/>
+    <img src="/images/cards/cover.jpg" alt="<%= "Back of Card"%>"/>
+  </div>
 <% end %>
 
 <hr/>
 
 <!-- Show player's cards -->
-<h4><%= session[:username] %>'s Cards</h4>
-<p>Show player's cards here.</p>
-
-<hr/>
-
-<!-- Provide action depending on turn and ability -->
-<% if session[:turn] == "player_turn" %>
-  Hit or stay.
-  <form method="post" action="/deal_to_player">
-    <input type="submit" value="Hit Me!"/>
-  </form>
-  <form method="post" action="/player_stay">
-    <input type="submit" value="Stay"/>
-  </form>
-<% elsif session[:turn] == "dealer_turn" && session[:dealer_score] < 17 %>
-  Form to show Dealer's next card if they have less than 17.
-  <form method="post" action="/deal_to_dealer">
-    <input type="submit" value="Give"/>
-  </form>
-<% else %>
-  <hr/>
-  <p>Show nothing.</p>
-<% end %>
-
+<h3><%= session[:username] %>, Your Cards Total <%= session[:player_score] %></h3>
+<h4>You Have $<%=session[:current_bet]%> at Risk and Have $<%=session[:bank]%> in the bank</h4>
+<div>
+    <% session[:player_cards].each do |card| %>
+      <img src="/images/cards/<%= "#{card[0]}_#{card[1]}" %>.jpg" alt="<%= "#{card[1]} of #{card[0]}"%>"/>
+    <% end %>
+  </div>
 
 

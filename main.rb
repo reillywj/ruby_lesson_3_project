@@ -6,6 +6,32 @@ use Rack::Session::Cookie, :key => 'rack.session',
                           :path => '/',
                           :secret => 'my_super_secret_string1988$&**'
 
+helpers do
+  def calculate_total(cards)
+    total = 0
+    aces = 0
+    cards.each do |card|
+      if card[1] == 'ace'
+        aces += 1
+      elsif card[1].to_i == 0
+        total += 10
+      else
+        total += card[1].to_i
+      end#if
+    end#do
+
+    if aces > 0
+      for i in 1..aces do
+        if total + (11 * (aces - i +1)) > 21
+          total += 1
+        else
+          total += 11
+        end#if
+      end#for
+    end#if
+      total
+  end#def
+end#do
 
 get '/' do
     redirect '/set_name'
@@ -49,10 +75,25 @@ post '/set_current_bet' do
   session[:turn]          = "player_turn" #initialize player's turn
   session[:player_status] = "hit" #initialize hit status; gives player option to hit or stay
   session[:winner]        = false
-  #Will deal cards here
-  session[:dealer_score]  = rand(17) + 4 #Calculate score
-  session[:player_score]  = rand(17) + 4 #Calculate score
-  redirect '/play_game'
+  #Setup Deck
+  suits = ['hearts', 'diamonds', 'clubs', 'spades']
+  values = ['2','3','4','5','6','7','8','9','10','jack','queen','king','ace']
+  session[:deck] = suits.product(values).shuffle!
+  #Deal Cards
+  session[:dealer_cards] = []
+  session[:player_cards] = []
+  session[:dealer_cards] << session[:deck].pop
+  session[:player_cards] << session[:deck].pop
+  session[:dealer_cards] << session[:deck].pop
+  session[:player_cards] << session[:deck].pop
+  #Calculate current score
+  session[:dealer_score]  = calculate_total session[:dealer_cards] #Calculate score
+  session[:player_score]  = calculate_total session[:player_cards]#Calculate score
+  if session[:player_score] == 21
+    redirect '/end_hand'
+  else
+    redirect '/play_game'
+  end
 end
 
 get '/play_game' do
@@ -61,7 +102,8 @@ end
 
 post '/deal_to_player' do
   #deal card to player
-  session[:player_score] += rand(10) + 1 #calculate player score
+  session[:player_cards] << session[:deck].pop
+  session[:player_score] = calculate_total session[:player_cards] #calculate player score
   if    session[:player_score] == 21
     redirect '/end_hand'
   elsif session[:player_score] <= 21
@@ -73,7 +115,8 @@ post '/deal_to_player' do
 end
 
 post '/deal_to_dealer' do
-  session[:dealer_score] += rand(10) + 1
+  session[:dealer_cards] << session[:deck].pop
+  session[:dealer_score] = calculate_total session[:dealer_cards]
   if session[:dealer_score] < 17
     redirect '/play_game'
   else
@@ -131,10 +174,6 @@ end
 
 get '/gameover' do 
   erb :gameover
-end
-
-post '/go_to_google' do
-  redirect 'https://www.google.com'
 end
 
 
