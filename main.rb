@@ -35,7 +35,7 @@ helpers do
   def card_image(card)
     suit = card[0]
     value = card[1]
-    "<img src='/images/cards/#{suit}_#{value}.jpg' alt='#{value} of #{suit}'/>"
+    "<img src='/images/cards/#{suit}_#{value}.jpg' alt='#{value} of #{suit}' class='card_image'/>"
   end
 end#do helper
 
