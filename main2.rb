@@ -44,19 +44,40 @@ helpers do
     "<img src='/images/cards/#{suit}_#{value}.jpg' alt='#{value} of #{suit}' class='card_image'/>"
   end
 
-  def winner!(msg)
-    session[:bank] += session[:current_bet] * 2
-    @success = "#{session[:username]}, you win! #{msg}"
+  def winner!(msg = "")
+    session[:bank] += session[:current_bet]
+    @success = "You won! #{msg} #{tell_bank}"
+    hand_over
   end
 
   def tie!
-    session[:bank] += session[:current_bet] #return bet back to player
-    @success = "It's a tie! #{calculate_total session[:player_cards]} to #{calculate_total session[:dealer_cards]}."
+    session[:bank] += 0 #return bet back to player
+    @success = "It's a tie! #{calculate_total session[:player_cards]} to #{calculate_total session[:dealer_cards]}. You still have $#{session[:bank]} to play with."
+    hand_over
   end
 
-  def loser!(msg)
+  def loser!(msg = "")
     #bet was removed at the beginning of the hand
-    @error = "Dealer wins! #{msg}"
+    session[:bank] -= session[:current_bet]
+    @error = "Dealer wins! #{msg} #{tell_bank}"
+    hand_over
+  end
+
+  def tell_bank
+    if session[:bank] <= 0
+      tell_bankrupt
+    else
+    "#{session[:username]}, you have $#{session[:bank]} in the bank." if session[:bank] > 0
+    end
+  end
+
+  def tell_bankrupt
+    "#{session[:username]}, you are out of money!!!"
+  end
+
+  def hand_over
+    session[:turn] = "hand_over"
+    session[:current_bet] = 0
   end
 
   def reset_bank
@@ -75,7 +96,7 @@ helpers do
       @error = "You bet of $#{bet} is more than you have in the bank --- $#{bank}."
       false
     elsif bet.to_i % BET_DENOMINATIONS != 0
-      @error = "$#{bet} is not a denomination of $#{BET_DENOMINATIONS}."
+      @error = "$#{bet} is not a multiple of $#{BET_DENOMINATIONS}."
       false
     elsif bet.to_i <= 0
       @error = "Bet must be greater than $0."
@@ -90,6 +111,14 @@ helpers do
     @info = "You have $#{session[:bank]}. Your bet must be in $#{BET_DENOMINATIONS} denominations, such as $#{BET_DENOMINATIONS * 7}."
   end
 
+  def info_hit_stay
+    @info = "#{session[:username]}, do you want to hit or stay?"
+  end
+
+  def deal_to(player_cards)
+    session[player_cards] << session[:deck].pop
+  end
+
   def initialize_game
     session[:turn]          = "player_turn" #initialize player's turn
     session[:player_status] = "hit" #initialize hit status; gives player option to hit or stay
@@ -101,10 +130,15 @@ helpers do
     #Deal Cards
     session[:dealer_cards] = []
     session[:player_cards] = []
-    session[:dealer_cards] << session[:deck].pop
-    session[:player_cards] << session[:deck].pop
-    session[:dealer_cards] << session[:deck].pop
-    session[:player_cards] << session[:deck].pop
+    deal_to :player_cards
+    deal_to :dealer_cards
+    deal_to :player_cards
+    deal_to :dealer_cards
+    info_hit_stay if calculate_total(session[:player_cards]) < BLACKJACK
+  end
+
+  def tell_card_dealt(card)
+    "#{card[1].capitalize} of #{card[0].capitalize} was dealt."
   end
 end#do helper
 
@@ -148,8 +182,64 @@ end
 
 get '/game' do
   initialize_game
-  #WILL: Fill in this portion when starting here.
+  if calculate_total(session[:player_cards]) == BLACKJACK
+    winner! "BLACKJACK!"
+  end
   erb :play_game
+end
+
+post '/game/player_turn' do
+  deal_to :player_cards if session[:turn] == "player_turn"
+  @info = tell_card_dealt(session[:player_cards].last)
+  total = calculate_total session[:player_cards]
+  if total < BLACKJACK
+    info_hit_stay.prepend("#{tell_card_dealt(session[:player_cards].last)} ")
+  elsif total == BLACKJACK
+    winner! "BLACKJACK!"
+  else
+    loser! "You busted."
+  end
+
+  erb :play_game
+end
+
+post '/game/dealer_turn' do
+  session[:player_status] = "stay"
+  session[:turn] = "dealer_turn" if session[:turn] = "player_turn"
+  dealer_total = calculate_total(session[:dealer_cards])
+  player_total = calculate_total(session[:player_cards])
+  if dealer_total < DEALER_MIN
+    deal_to :dealer_cards
+    @info = tell_card_dealt(session[:dealer_cards].last)
+  end
+
+  dealer_total = calculate_total(session[:dealer_cards])
+
+  if dealer_total < DEALER_MIN
+    @info = "#{tell_card_dealt(session[:dealer_cards].last)} Total is still less than #{DEALER_MIN}, deal another card to dealer."
+  elsif dealer_total > BLACKJACK
+    winner!("Dealer busted.")
+  elsif dealer_total == player_total
+    tie!
+  elsif dealer_total > player_total
+    loser!
+  else
+    winner!
+  end
+
+  erb :play_game
+end
+
+post '/play_again' do
+  redirect '/bet'
+end
+
+post '/gameover' do
+  erb :gameover
+end
+
+post '/play_new_game' do
+  redirect '/'
 end
 
 
