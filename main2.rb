@@ -193,7 +193,7 @@ post '/game/player_turn' do
   @info = tell_card_dealt(session[:player_cards].last)
   total = calculate_total session[:player_cards]
   if total < BLACKJACK
-    info_hit_stay.prepend("#{tell_card_dealt(session[:player_cards].last)} ")
+    @info = info_hit_stay + "#{tell_card_dealt(session[:player_cards].last)} "
   elsif total == BLACKJACK
     winner! "BLACKJACK!"
   else
