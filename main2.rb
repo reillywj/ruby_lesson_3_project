@@ -112,7 +112,7 @@ helpers do
   end
 
   def info_hit_stay
-    @info = "#{session[:username]}, do you want to hit or stay?"
+    @info = "#{session[:username]}, do you want to hit or stay?" unless calculate_total session[:player_cards]
   end
 
   def deal_to(player_cards)
@@ -200,7 +200,7 @@ post '/game/player_turn' do
     loser! "You busted."
   end
 
-  erb :play_game
+  erb :play_game, layout: false
 end
 
 post '/game/dealer_turn' do
