@@ -199,7 +199,7 @@ post '/game/player_turn' do
     loser! "You busted."
   end
 
-  erb :play_game
+  erb :play_game, layout: false
 end
 
 post '/game/dealer_turn' do
@@ -226,7 +226,7 @@ post '/game/dealer_turn' do
     winner!
   end
 
-  erb :play_game
+  erb :play_game, layout:false
 end
 
 post '/play_again' do
