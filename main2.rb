@@ -112,7 +112,7 @@ helpers do
   end
 
   def info_hit_stay
-    @info = "#{session[:username]}, do you want to hit or stay?" unless calculate_total session[:player_cards]
+    @info = "#{session[:username]}, do you want to hit or stay?" unless calculate_total(session[:player_cards]) > 21
   end
 
   def deal_to(player_cards)
@@ -190,29 +190,28 @@ end
 
 post '/game/player_turn' do
   deal_to :player_cards if session[:turn] == "player_turn"
-  @info = tell_card_dealt(session[:player_cards].last)
   total = calculate_total session[:player_cards]
   if total < BLACKJACK
-    @info = info_hit_stay + "#{tell_card_dealt(session[:player_cards].last)} "
+    @info = "#{tell_card_dealt(session[:player_cards].last)} "
   elsif total == BLACKJACK
     winner! "BLACKJACK!"
   else
     loser! "You busted."
   end
 
-  erb :play_game, layout: false
+  erb :play_game
 end
 
 post '/game/dealer_turn' do
   session[:player_status] = "stay"
-  session[:turn] = "dealer_turn" if session[:turn] = "player_turn"
+  
   dealer_total = calculate_total(session[:dealer_cards])
   player_total = calculate_total(session[:player_cards])
-  if dealer_total < DEALER_MIN
+  if dealer_total < DEALER_MIN && session[:turn] == "dealer_turn"
     deal_to :dealer_cards
     @info = tell_card_dealt(session[:dealer_cards].last)
   end
-
+  session[:turn] = "dealer_turn" if session[:turn] = "player_turn"
   dealer_total = calculate_total(session[:dealer_cards])
 
   if dealer_total < DEALER_MIN

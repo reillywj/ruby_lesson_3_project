@@ -1,5 +1,18 @@
 <div id="game">
-  <% unless "hand_over" == session[:turn] %>
+
+  <div class="container">
+    <%if @error %>
+      <div class="alert alert-error"><%= @error %></div>
+    <% end %>
+    <%if @success %>
+      <div class="alert alert-success"><%= @success %></div>
+    <% end %>
+    <%if @info %>
+      <div class="alert alert-info"><%= @info %></div>
+    <% end %>
+  </div>
+
+<% unless "hand_over" == session[:turn] %>
   <h2>Let's Play Blackjack!</h2>
   <h3>You have <%=calculate_total session[:player_cards]%></h3>
   <h4>You have bet $<%=session[:current_bet]%> and have $<%=session[:bank]%>.</h4>
@@ -52,7 +65,7 @@
     </tbody>
   </table>
 <% elsif session[:turn] == "dealer_turn" && calculate_total(session[:dealer_cards]) < 17 %>
-  <form method="post" action="/game/dealer_turn">
+  <form id="deal_dealer_form" method="post" action="/game/dealer_turn">
     <input type="submit" value="Dealer only has <%=calculate_total(session[:dealer_cards]) %>. Deal Card to Dealer." class='btn btn-primary'/>
   </form>
 <% else %>
